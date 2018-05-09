@@ -1,0 +1,163 @@
+---
+title: "GEOLV - Descriptive Statistics"
+author: "Rafael Coelho"
+date: "May 9, 2018"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE,
+                      warning = FALSE,
+                      message = FALSE,
+                      fig.align = "center",
+                      fig.width = 6.0,
+                      fig.height = 3.0)
+```
+
+```{r}
+library(tidyverse)
+library(knitr)
+
+curitiba <- read_csv("banco_curitiba.csv")
+rjan_cuib <- read_csv("banco_riodejaneiro_cuiaba.csv")
+
+dados <- curitiba %>% 
+  bind_rows(rjan_cuib)
+
+rm(curitiba, rjan_cuib)
+```
+
+## 1. Descriptive Statistics
+
+```{r}
+dados %>% 
+  ggplot(mapping = aes(x = dispersion)) +
+  geom_histogram() +
+  theme_minimal() +
+  labs(x = "Dispersion",
+       y = "n",
+       title = "Dispersion: Histogram")
+```
+
+```{r}
+dados %>% 
+  ggplot(mapping = aes(x = clusters_count)) +
+  geom_bar()+
+  theme_minimal()+
+  labs(x = "Clusters Count",
+       y = "n",
+       title = "Clusters Count: Bar Graph")
+```
+
+```{r}
+dados %>% 
+  ggplot(mapping = aes(x = providers_count)) +
+  geom_bar()+
+  theme_minimal()+
+  labs(x = "Providers Count",
+       y = "n",
+       title = "Providers Count: Bar Graph")
+```
+
+```{r}
+dados %>% 
+  ggplot(mapping = aes(x = levenshtein_match_street_name)) +
+  geom_histogram()+
+  theme_minimal() +
+  labs(x = "Levenshtein (%)",
+       y = "n",
+       title = "Levenshtein Match: Histogram")
+```
+
+```{r}
+dados %>% 
+  select(dispersion:levenshtein_match_street_name) %>% 
+  map_df(summary) %>% 
+  t() %>% 
+  kable(col.names = c("Min.", "1st Qu.", "Median", "Mean", "3rd Qu.", "Max", "NA's"))
+```
+
+## 2. Descriptive Statistics by Metropolitan Region (MR)
+
+```{r}
+dados <- dados %>% 
+  mutate(MR = case_when(SG_UF == "MT" ~ "Cuiaba - MT",
+                        SG_UF == "PR" ~ "Curitiba - PR",
+                        SG_UF == "RJ" ~ "Rio de Janeiro - RJ"))
+```
+
+```{r}
+dados %>% 
+  ggplot(mapping = aes(x = dispersion)) +
+  geom_histogram() +
+  theme_minimal() +
+  labs(x = "Dispersion",
+       y = "n",
+       title = "Dispersion: Histogram") +
+  facet_wrap(~MR, scales = "free")
+```
+
+```{r}
+dados %>% 
+  ggplot(mapping = aes(x = clusters_count)) +
+  geom_bar()+
+  theme_minimal()+
+  labs(x = "Clusters Count",
+       y = "n",
+       title = "Clusters Count: Bar Graph") +
+  facet_wrap(~MR, scales = "free")
+```
+
+```{r}
+dados %>% 
+  ggplot(mapping = aes(x = providers_count)) +
+  geom_bar()+
+  theme_minimal()+
+  labs(x = "Providers Count",
+       y = "n",
+       title = "Providers Count: Bar Graph") +
+  facet_wrap(~MR, scales = "free")
+```
+
+```{r}
+dados %>% 
+  ggplot(mapping = aes(x = levenshtein_match_street_name)) +
+  geom_histogram()+
+  theme_minimal() +
+  labs(x = "Levenshtein (%)",
+       y = "n",
+       title = "Levenshtein Match: Histogram") +
+  facet_wrap(~MR, scales = "free")
+```
+
+```{r}
+dados %>% 
+  filter(MR == "Curitiba - PR") %>% 
+  select(dispersion:levenshtein_match_street_name) %>% 
+  map_df(summary) %>% 
+  t() %>% 
+  kable(col.names = c("Min.", "1st Qu.", "Median", "Mean", "3rd Qu.", "Max", "NA's"),
+        caption = "Descriptive Statistics: Curitiba - PR")
+```
+
+```{r}
+dados %>% 
+  filter(MR == "Cuiaba - MT") %>% 
+  select(dispersion:levenshtein_match_street_name) %>% 
+  map_df(summary) %>% 
+  t() %>% 
+  kable(col.names = c("Min.", "1st Qu.", "Median", "Mean", "3rd Qu.", "Max", "NA's"),
+        caption = "Descriptive Statistics: Cuiaba - MT")
+```
+
+```{r}
+dados %>% 
+  filter(MR == "Rio de Janeiro - RJ") %>% 
+  select(dispersion:levenshtein_match_street_name) %>% 
+  map_df(summary) %>% 
+  t() %>% 
+  kable(col.names = c("Min.", "1st Qu.", "Median", "Mean", "3rd Qu.", "Max", "NA's"),
+        caption = "Descriptive Statistics: Curitiba - Rio de Janeiro - RJ")
+```
